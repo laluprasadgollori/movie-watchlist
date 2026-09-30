@@ -1,0 +1,786 @@
+{
+  "info": {
+    "_postman_id": "b8c2f9a5-8d9d-4c7a-9e42-5c6c2e2f1f01",
+    "name": "Movie Watchlist API",
+    "description": "Postman collection for the 17 Movie Watchlist API endpoints. Set baseUrl to the running Express server URL. Login and create requests automatically save token and resource IDs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "movieId",
+      "value": "65f1a1b2c3d4e5f678901234",
+      "type": "string"
+    },
+    {
+      "key": "reviewId",
+      "value": "65f1a1b2c3d4e5f678901235",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ada Lovelace\",\n  \"email\": \"ada@example.com\",\n  \"password\": \"secret123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Creates a user and returns a JWT token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"user\": {\n    \"id\": \"65f1a1b2c3d4e5f678901230\",\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\"\n  },\n  \"token\": \"<jwt-token>\"\n}"
+            },
+            {
+              "name": "400 Duplicate Email",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"message\": \"Email is already registered\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ada@example.com\",\n  \"password\": \"secret123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('token', pm.response.json().token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"user\": {\n    \"id\": \"65f1a1b2c3d4e5f678901230\",\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\"\n  },\n  \"token\": \"<jwt-token>\"\n}"
+            },
+            {
+              "name": "401 Invalid Credentials",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"message\": \"Invalid email or password\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"user\": {\n    \"id\": \"65f1a1b2c3d4e5f678901230\",\n    \"name\": \"Ada Lovelace\",\n    \"email\": \"ada@example.com\"\n  }\n}"
+            },
+            {
+              "name": "401 Missing Token",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"message\": \"Not authorized\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Movies",
+      "item": [
+        {
+          "name": "Create Movie",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"The Matrix\",\n  \"genre\": \"Sci-Fi\",\n  \"posterUrl\": \"https://example.com/matrix.jpg\",\n  \"year\": 1999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movies"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('movieId', pm.response.json()._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"_id\": \"65f1a1b2c3d4e5f678901234\",\n  \"title\": \"The Matrix\",\n  \"genre\": \"Sci-Fi\",\n  \"watched\": false,\n  \"addedBy\": \"65f1a1b2c3d4e5f678901230\"\n}"
+            },
+            {
+              "name": "400 Missing Fields",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"message\": \"Validation failed\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Movies",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/movies?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movies"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": [],\n  \"page\": 1,\n  \"limit\": 10,\n  \"totalCount\": 0,\n  \"totalPages\": 0\n}"
+            },
+            {
+              "name": "401 Missing Token",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"message\": \"Not authorized\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Movie",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/movies/{{movieId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movies",
+                "{{movieId}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"_id\": \"65f1a1b2c3d4e5f678901234\",\n  \"title\": \"The Matrix\",\n  \"genre\": \"Sci-Fi\",\n  \"watched\": false\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"message\": \"Movie not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Movie",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"genre\": \"Science Fiction\",\n  \"watched\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movies/{{movieId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movies",
+                "{{movieId}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"_id\": \"65f1a1b2c3d4e5f678901234\",\n  \"genre\": \"Science Fiction\",\n  \"watched\": true\n}"
+            },
+            {
+              "name": "403 Not Owner",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"message\": \"You do not own this movie\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Movie",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/movies/{{movieId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movies",
+                "{{movieId}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"message\": \"Movie deleted successfully\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"message\": \"Movie not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mark Movie Watched",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/api/movies/{{movieId}}/watched",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movies",
+                "{{movieId}}",
+                "watched"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"_id\": \"65f1a1b2c3d4e5f678901234\",\n  \"watched\": true\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"message\": \"Movie not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Watched Movies",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/movies/watched?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movies",
+                "watched"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": [],\n  \"page\": 1,\n  \"limit\": 10,\n  \"totalCount\": 0,\n  \"totalPages\": 0\n}"
+            },
+            {
+              "name": "401 Missing Token",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"message\": \"Not authorized\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Top Rated Movies",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/movies/top-rated?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movies",
+                "top-rated"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": [\n    {\n      \"_id\": \"65f1a1b2c3d4e5f678901234\",\n      \"title\": \"The Matrix\",\n      \"avgRating\": 4.8\n    }\n  ],\n  \"page\": 1,\n  \"limit\": 10,\n  \"totalCount\": 1,\n  \"totalPages\": 1\n}"
+            },
+            {
+              "name": "401 Missing Token",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"message\": \"Not authorized\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search Movies",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/movies/search?q=matrix&page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "movies",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "matrix"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": [\n    {\n      \"_id\": \"65f1a1b2c3d4e5f678901234\",\n      \"title\": \"The Matrix\"\n    }\n  ],\n  \"page\": 1,\n  \"limit\": 10,\n  \"totalCount\": 1,\n  \"totalPages\": 1\n}"
+            },
+            {
+              "name": "400 Missing Query",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"message\": \"Search query is required\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"movie\": \"{{movieId}}\",\n  \"rating\": 5,\n  \"comment\": \"A brilliant classic.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reviews"
+              ]
+            },
+            "description": "Contract request for the Review API phase."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('reviewId', pm.response.json()._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"_id\": \"65f1a1b2c3d4e5f678901235\",\n  \"movie\": \"65f1a1b2c3d4e5f678901234\",\n  \"rating\": 5,\n  \"comment\": \"A brilliant classic.\"\n}"
+            },
+            {
+              "name": "400 Invalid Rating",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"message\": \"Rating must be between 1 and 5\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Reviews",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews?page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reviews"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": [],\n  \"page\": 1,\n  \"limit\": 10,\n  \"totalCount\": 0,\n  \"totalPages\": 0\n}"
+            },
+            {
+              "name": "401 Missing Token",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"message\": \"Not authorized\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Review",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "{{reviewId}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"_id\": \"65f1a1b2c3d4e5f678901235\",\n  \"movie\": \"65f1a1b2c3d4e5f678901234\",\n  \"rating\": 5,\n  \"comment\": \"A brilliant classic.\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"message\": \"Review not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Review",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4,\n  \"comment\": \"Still excellent on rewatch.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "{{reviewId}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"_id\": \"65f1a1b2c3d4e5f678901235\",\n  \"rating\": 4,\n  \"comment\": \"Still excellent on rewatch.\"\n}"
+            },
+            {
+              "name": "403 Not Owner",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"message\": \"You do not own this review\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/{{reviewId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "{{reviewId}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"message\": \"Review deleted successfully\"\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"message\": \"Review not found\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
